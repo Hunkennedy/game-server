@@ -8,19 +8,23 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
+import { GamesService } from 'src/services/games.service';
+import { ParseIntPipe } from 'src/common/parse-int/parse-int.pipe';
+import { CreateGameDto, UpdateGameDto } from 'src/dtos/game.dtos';
 
 @Controller('games')
 export class GamesController {
+  constructor(private readonly GamesService: GamesService) {}
   games = [
     {
-      titulo: 'Grand Theft Auto: Vice City',
+      title: 'Grand Theft Auto: Vice City',
       release: '29-10-2002',
       developer: 'Rockstar North',
       publisher: 'Rockstar Games',
       price: 60,
     },
     {
-      titulo: 'Grand Theft Auto: San Andreas',
+      title: 'Grand Theft Auto: San Andreas',
       release: '24-11-2004',
       developer: 'Rockstar North',
       publisher: 'Rockstar Games',
@@ -36,38 +40,39 @@ export class GamesController {
     return {
       status: true,
       message: `All Games with limit ${limit} and offset ${offset}. Developed by ${developer}`,
-      payload: this.games,
+      payload: this.GamesService.getAllGames(),
     };
   }
 
   @Get(':id')
-  getOne(@Param('id') id: number) {
+  getOne(@Param('id', ParseIntPipe) id: number) {
     return {
       status: true,
-      message: `Product ID: ${id}`,
+      message: this.GamesService.getGameById(id),
     };
   }
   @Post()
-  create(@Body() payload: any) {
-    this.games.push(payload);
+  create(@Body() payload: CreateGameDto) {
     return {
-      status: true,
+      status: this.GamesService.create(payload),
       message: 'Game Created',
-      payload: payload,
     };
   }
   @Put(':id')
-  update(@Param('id') id: number, @Body() payload: any) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() payload: UpdateGameDto,
+  ) {
     return {
       id: id,
       modified: new Date().toLocaleDateString().slice(0, 20),
-      payload: payload,
+      payload: this.GamesService.update(id, payload),
     };
   }
   @Delete(':id')
-  delete(@Param('id') id: number) {
+  delete(@Param('id', ParseIntPipe) id: number) {
     return {
-      id: id,
+      id: this.GamesService.delete(id),
       deleted: new Date().toLocaleDateString().slice(0, 20),
     };
   }

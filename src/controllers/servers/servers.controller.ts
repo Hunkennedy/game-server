@@ -7,14 +7,18 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
+import { ParseIntPipe } from 'src/common/parse-int/parse-int.pipe';
+import { CreateServerDto, UpdateServerDto } from 'src/dtos/server.dto';
+import { ServersService } from 'src/services/servers.service';
 
 @Controller('servers')
 export class ServersController {
+  constructor(private readonly ServerService: ServersService) {}
   @Get()
   getServers() {
     return {
       status: true,
-      message: `Getting all Servers`,
+      message: this.ServerService.getAllServers(),
     };
   }
 
@@ -22,31 +26,32 @@ export class ServersController {
   getServerById(@Param('id') id: number) {
     return {
       status: true,
-      message: `Getting Server with ID ${id}`,
+      message: this.ServerService.getServerById(id),
     };
   }
 
   @Post()
-  create(@Body() payload: any) {
+  create(@Body() payload: CreateServerDto) {
     return {
       status: true,
-      message: 'Server Created',
-      payload: payload,
+      message: this.ServerService.create(payload),
     };
   }
   @Put(':id')
-  update(@Param('id') id: number, @Body() payload: any) {
+  update(
+    @Param('id', ParseIntPipe) id: number,
+    @Body() payload: UpdateServerDto,
+  ) {
     return {
       id: id,
-      modified: new Date().toLocaleDateString().slice(0, 20),
-      payload: payload,
+      modified: this.ServerService.update(id, payload),
     };
   }
   @Delete(':id')
   delete(@Param('id') id: number) {
     return {
       id: id,
-      deleted: new Date().toLocaleDateString().slice(0, 20),
+      deleted: this.ServerService.delete(id),
     };
   }
 }

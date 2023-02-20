@@ -7,14 +7,17 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
+import { CreateUserDto, UpdateUserDto } from 'src/dtos/user.dto';
+import { UsersService } from 'src/services/users.service';
 
 @Controller('users')
 export class UsersController {
+  constructor(private readonly userService: UsersService) {}
   @Get()
   getUsers() {
     return {
       status: true,
-      message: `Getting all users`,
+      message: this.userService.getAllUsers(),
     };
   }
 
@@ -22,31 +25,29 @@ export class UsersController {
   getUserById(@Param('id') id: number) {
     return {
       status: true,
-      message: `Getting user with ID ${id}`,
+      message: this.userService.getUserById(id),
     };
   }
 
   @Post()
-  create(@Body() payload: any) {
+  create(@Body() payload: CreateUserDto) {
     return {
-      status: true,
+      status: this.userService.create(payload),
       message: 'User Created',
-      payload: payload,
     };
   }
   @Put(':id')
-  update(@Param('id') id: number, @Body() payload: any) {
+  update(@Param('id') id: number, @Body() payload: UpdateUserDto) {
     return {
       id: id,
-      modified: new Date().toLocaleDateString().slice(0, 20),
-      payload: payload,
+      modified: this.userService.update(id, payload),
     };
   }
   @Delete(':id')
   delete(@Param('id') id: number) {
     return {
       id: id,
-      deleted: new Date().toLocaleDateString().slice(0, 20),
+      deleted: this.userService.delete(id),
     };
   }
 }
